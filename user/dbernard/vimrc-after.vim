@@ -134,11 +134,31 @@ let g:syntastic_python_checkers = ['python']
 " Autocommands
 " =============================================================
 
+function! ChangeRebaseAction(action)
+    let ptn = '^\(pick\|reword\|edit\|squash\|fixup\|exec\|p\|r\|e\|s\|f\|x\)\s'
+    let line = getline(".")
+    let result = matchstr(line, ptn)
+    if result != ""
+        execute "normal! ^cw" . a:action
+        execute "normal! ^"
+    endif
+endfunction
+
+function! SetupRebaseMappings()
+    nnoremap <buffer> <Leader><Leader>f :call ChangeRebaseAction('fixup')<CR>
+    nnoremap <buffer> <Leader><Leader>p :call ChangeRebaseAction('pick')<CR>
+    nnoremap <buffer> <Leader><Leader>r :call ChangeRebaseAction('reword')<CR>
+    nnoremap <buffer> <Leader><Leader>s :call ChangeRebaseAction('squash')<CR>
+endfunction
+
 augroup dbernard_vimrc
     autocmd!
 
     " The toggle help feature seems to reset list.  I really want it off for
     " the help buffer though.
     autocmd BufEnter * if &bt == "help" | setlocal nolist | endif
+
+    " Add my rebase mappings when doing a `git rebase`.
+    autocmd FileType gitrebase call SetupRebaseMappings()
 augroup END
 
